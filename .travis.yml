@@ -1,0 +1,47 @@
+language: android
+sudo: required
+
+env:
+  global:
+    - EMULATOR_API_LEVEL=21
+    - ANDROID_ABI=google_apis/armeabi-v7a
+    - ADB_INSTALL_TIMEOUT=8
+    - AVD_DEBUG='init,avd_config,nand_limits,keys,adb,adbserver,adbclient'
+
+android:
+  components:
+    - tools
+    - platform-tools
+    - tools
+
+    - build-tools-25.0.0
+    - build-tools-26.0.2
+    - android-$EMULATOR_API_LEVEL
+    - android-23
+    - android-26
+    - extra-google-m2repository
+    - extra-android-m2repository
+    - extra-android-support
+    - extra-google-google_play_services
+    - addon-google_apis-google-$EMULATOR_API_LEVEL
+    - sys-img-armeabi-v7a-google_apis-$EMULATOR_API_LEVEL
+
+  licenses:
+      - 'android-sdk-license-.+'
+      - 'google-gdk-license-.+'
+
+before_install:
+  - chmod +x gradlew
+
+before_script:
+  - android list targets
+  - echo no | android create avd --force -n test -t android-$EMULATOR_API_LEVEL --abi armeabi-v7a --tag google_apis
+  - export QEMU_AUDIO_DRV=none && emulator -engine classic -avd test -no-window &
+  - android-wait-for-emulator
+  - adb shell settings put global window_animation_scale 0 &
+  - adb shell settings put global transition_animation_scale 0 &
+  - adb shell settings put global animator_duration_scale 0 &
+  - adb shell input keyevent 82 &
+
+script:
+  - ./gradlew connectedAndroidTest && ./gradlew assembleRelease && ./gradlew test
