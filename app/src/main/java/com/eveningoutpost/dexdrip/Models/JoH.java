@@ -56,6 +56,7 @@ import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.R;
 import com.eveningoutpost.dexdrip.UtilityModels.Constants;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
+import com.eveningoutpost.dexdrip.UtilityModels.XdripNotificationCompat;
 import com.eveningoutpost.dexdrip.utils.BestGZIPOutputStream;
 import com.eveningoutpost.dexdrip.utils.CipherUtils;
 import com.eveningoutpost.dexdrip.xdrip;
@@ -620,6 +621,15 @@ public class JoH {
         return wl;
     }
 
+    public static void fullDatabaseReset() {
+        try {
+            clearCache();
+            ActiveAndroid.dispose();
+            ActiveAndroid.initialize(xdrip.getAppContext());
+        } catch (Exception e) {
+            Log.e(TAG,"Error restarting active android db");
+        }
+    }
 
     public static void clearCache() {
         try {
@@ -1042,7 +1052,7 @@ public class JoH {
         final NotificationManager mNotifyMgr = (NotificationManager) xdrip.getAppContext().getSystemService(Context.NOTIFICATION_SERVICE);
         // if (!onetime) mNotifyMgr.cancel(notificationId);
 
-        mNotifyMgr.notify(notificationId, mBuilder.build());
+        mNotifyMgr.notify(notificationId, XdripNotificationCompat.build(mBuilder));
     }
 
     private static NotificationCompat.Builder notificationBuilder(String title, String content, PendingIntent intent, String channelId) {
