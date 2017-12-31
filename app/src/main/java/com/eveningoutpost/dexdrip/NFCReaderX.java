@@ -17,20 +17,21 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.util.Log;
 import android.view.View;
 
 import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.GlucoseData;
 import com.eveningoutpost.dexdrip.Models.JoH;
+import com.eveningoutpost.dexdrip.Models.LibreBlock;
+import com.eveningoutpost.dexdrip.Models.LibreOOPAlgorithm;
 import com.eveningoutpost.dexdrip.Models.PredictionData;
 import com.eveningoutpost.dexdrip.Models.ReadingData;
+import com.eveningoutpost.dexdrip.Models.UserError.Log;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -92,15 +93,19 @@ public class NFCReaderX {
         if (!useNFC()) return;
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(context);
+        try {
+            if (mNfcAdapter == null) {
 
-        if (mNfcAdapter == null) {
+                JoH.static_toast_long("Phone has no NFC reader");
+                //finish();
+                return;
 
-            JoH.static_toast_long("Phone has no NFC reader");
-            //finish();
-            return;
-
-        } else if (!mNfcAdapter.isEnabled()) {
-            JoH.static_toast_long("NFC is not enabled");
+            } else if (!mNfcAdapter.isEnabled()) {
+                JoH.static_toast_long("NFC is not enabled");
+                return;
+            }
+        } catch (NullPointerException e) {
+            JoH.static_toast_long("Phone NFC is having problems!");
             return;
         }
 
@@ -222,20 +227,28 @@ public class NFCReaderX {
 
         @Override
         protected void onPostExecute(Tag tag) {
+        	Log.d(TAG, "onPostExecute called");
             try {
                 if (tag == null) return;
                 if (!NFCReaderX.useNFC()) return;
                 if (succeeded) {
                     final String tagId = bytesToHexString(tag.getId());
 
-                    mResult = parseData(0, tagId, data);
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            LibreAlarmReceiver.processReadingDataTransferObject(new ReadingData.TransferObject(1, mResult));
-                            Home.staticRefreshBGCharts();
-                        }
-                    }.start();
+                    // Save raw block record (we start from block 0)
+                    LibreBlock.createAndSave(tagId, data, 0);
+
+                    if(Home.getPreferencesBooleanDefaultFalse("external_blukon_algorithm")) {
+                    	LibreOOPAlgorithm.SendData(data);
+                    } else {
+	                    mResult = parseData(0, tagId, data);
+	                    new Thread() {
+	                        @Override
+	                        public void run() {
+	                            LibreAlarmReceiver.processReadingDataTransferObject(new ReadingData.TransferObject(1, mResult));
+	                            Home.staticRefreshBGCharts();
+	                        }
+	                    }.start();
+                    }
                 } else {
                     Log.d(TAG, "Scan did not succeed so ignoring buffer");
                 }
@@ -310,7 +323,7 @@ public class NFCReaderX {
 
                         if (multiblock) {
                             final int correct_reply_size = addressed ? 28 : 25;
-                            for (int i = 0; i <= 40; i = i + 3) {
+                            for (int i = 0; i <= 43; i = i + 3) {
                                 final byte[] cmd;
                                 if (addressed) {
                                     cmd = new byte[]{0x60, 0x23, 0, 0, 0, 0, 0, 0, 0, 0, (byte) i, 0x02};
@@ -363,7 +376,7 @@ public class NFCReaderX {
                         } else {
                             // always addressed
                             final int correct_reply_size = 10;
-                            for (int i = 0; i <= 40; i++) {
+                            for (int i = 0; i < 43; i++) {
                                 final byte[] cmd = new byte[]{0x60, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, (byte) i, 0};
                                 System.arraycopy(uid, 0, cmd, 2, 8);
                                 byte[] oneBlock;

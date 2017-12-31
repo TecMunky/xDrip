@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import static com.eveningoutpost.dexdrip.Models.BgReading.isDataSuitableForDoubleCalibration;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.STALE_CALIBRATION_CUT_OFF;
 import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.newFingerStickData;
 
@@ -268,7 +269,7 @@ public class Calibration extends Model {
         final List<BgReading> bgReadings = BgReading.latest_by_size(3);
 
         // don't allow initial calibration if data would be stale
-            if ((bgReadings == null) || (bgReadings.size() != 3 || (JoH.msSince(bgReadings.get(2).timestamp) > STALE_CALIBRATION_CUT_OFF))) {
+            if ((bgReadings == null) || (bgReadings.size() != 3) || !isDataSuitableForDoubleCalibration() ){
             UserError.Log.wtf(TAG, "Did not find 3 readings for initial calibration - aborting");
             JoH.static_toast_long("Not enough recent sensor data! - cancelling!");
             return;
@@ -682,6 +683,18 @@ public class Calibration extends Model {
                 }
                 Log.d(TAG, "Calculated Calibration Slope: " + calibration.slope);
                 Log.d(TAG, "Calculated Calibration intercept: " + calibration.intercept);
+
+                // sanity check result
+                if (Double.isInfinite(calibration.slope)
+                        ||(Double.isNaN(calibration.slope))
+                        ||(Double.isInfinite(calibration.intercept))
+                        ||(Double.isNaN(calibration.intercept))) {
+                    calibration.sensor_confidence = 0;
+                    calibration.slope_confidence = 0;
+                    Home.toaststaticnext("Got invalid impossible slope calibration!");
+                    calibration.save(); // Save nulled record, lastValid should protect from bad calibrations
+                    newFingerStickData();
+                }
 
                 if ((calibration.slope == 0) && (calibration.intercept == 0)) {
                     calibration.sensor_confidence = 0;
