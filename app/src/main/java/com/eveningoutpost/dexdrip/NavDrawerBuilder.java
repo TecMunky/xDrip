@@ -48,16 +48,16 @@ public class NavDrawerBuilder {
         this.nav_drawer_options.add(context.getString(R.string.home_screen));
         this.nav_drawer_intents.add(new Intent(context, Home.class));
 
-        if ((is_active_sensor) && (last_two_calibrations != null) && (last_two_calibrations.size() > 0)) {
-            this.nav_drawer_options.add(context.getString(R.string.calibration_graph));
-            this.nav_drawer_intents.add(new Intent(context, CalibrationGraph.class));
-        }
-
         if (prefs.getBoolean("show_data_tables", false)) {
             this.nav_drawer_options.add(context.getString(R.string.bg_data_table));
             this.nav_drawer_intents.add(new Intent(context, BgReadingTable.class));
             this.nav_drawer_options.add(context.getString(R.string.calibration_data_table));
             this.nav_drawer_intents.add(new Intent(context, CalibrationDataTable.class));
+        }
+
+        if ((is_active_sensor) && (last_two_calibrations != null) && (last_two_calibrations.size() > 0)) {
+            this.nav_drawer_options.add(context.getString(R.string.calibration_graph));
+            this.nav_drawer_intents.add(new Intent(context, CalibrationGraph.class));
         }
 
         if ((prefs.getString("dex_collection_method", "").equals("Follower"))) {
@@ -123,11 +123,8 @@ public class NavDrawerBuilder {
             this.nav_drawer_intents.add(new Intent(context, SnoozeActivity.class));
         }
 
-        if (use_note_search || (Treatments.last() != null)) {
-            this.nav_drawer_options.add(context.getString(R.string.note_search));
-            this.nav_drawer_intents.add(new Intent(context, NoteSearch.class));
-            use_note_search = true; // cache
-        }
+        this.nav_drawer_options.add(context.getString(R.string.settings));
+        this.nav_drawer_intents.add(new Intent(context, Preferences.class));
 
         if (Experience.gotData()) {
             this.nav_drawer_options.add(context.getString(R.string.statistics));
@@ -137,7 +134,11 @@ public class NavDrawerBuilder {
             this.nav_drawer_intents.add(new Intent(context, BGHistory.class));
         }
 
-        this.nav_drawer_options.add(context.getString(R.string.settings));
-        this.nav_drawer_intents.add(new Intent(context, Preferences.class));
+        if (use_note_search || (Treatments.last() != null)) {
+            this.nav_drawer_options.add(context.getString(R.string.note_search));
+            this.nav_drawer_intents.add(new Intent(context, NoteSearch.class));
+            use_note_search = true; // cache
+        }
+
     }
 }

@@ -180,7 +180,7 @@ public class G5CollectionService extends G5BaseService {
     private static final boolean getVersionDetails = true; // try to load firmware version details
     private static final boolean getBatteryDetails = true; // try to load battery info details
 
-    private static final long BATTERY_READ_PERIOD_MS = 1000 * 60 * 60 * 12; // how often to poll battery data (12 hours)
+    private static final long BATTERY_READ_PERIOD_MS = (1000 * 60) * ((60 * 3) - 3) ; // how often to poll battery data // 3 hr (-3 minutes)
 
 
     StringBuilder log = new StringBuilder();

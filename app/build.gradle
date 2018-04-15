@@ -112,9 +112,81 @@ def generateVersionName = { ->
 
 }
 
+def generateBuildName = { ->
+
+    StringBuilder stringBuilder = new StringBuilder();
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'describe', '--always'
+            standardOutput = stdout
+        }
+
+        stringBuilder.append("xDrip+")
+        /*
+        String commitObject = stdout.toString().trim()
+        try {
+            stdout = new ByteArrayOutputStream()
+            exec {
+                commandLine 'git', 'describe', '--tags'
+                standardOutput = stdout
+            }
+         } catch (ignored) {
+            // no tags
+        }
+        stringBuilder.append(commitObject)
+        stringBuilder.append("-")
+        // */
+
+        stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--show-toplevel'
+            standardOutput = stdout
+        }
+        if (stdout.toString().trim().contains("xDrip-Experimental")) {
+            stringBuilder.append("-experimental")
+        }
+
+        stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-parse', '--abbrev-ref', 'HEAD'
+            standardOutput = stdout
+        }
+        String branch = stdout.toString().trim()
+        if (!branch.equals("master")) {
+            stringBuilder.append(branch)
+        }
+
+    } catch (ignored) {
+        return "NoGitSystemAvailable";
+    }
+    stringBuilder.append('-')
+    stringBuilder.append((new Date()).format('yyyy_MM_dd_HHmm'))
+    return stringBuilder.toString()
+
+}
+
+
+// Create a variable called keystorePropertiesFile, and initialize it to your
+// keystore.properties file, in the rootProject folder.
+def keystorePropertiesFile = rootProject.file("keystore.properties")
+
+// Initialize a new Properties() object called keystoreProperties.
+def keystoreProperties = new Properties()
+
+// Load your keystore.properties file into the keystoreProperties object.
+keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 
 android {
+    signingConfigs {
+        config {
+            keyAlias keystoreProperties['keyAlias']
+            keyPassword keystoreProperties['keyPassword']
+            storeFile file(keystoreProperties['storeFile'])
+            storePassword keystoreProperties['storePassword']
+        }
+    }
     compileSdkVersion 26
     buildToolsVersion '26.0.2'
 
@@ -133,6 +205,7 @@ android {
         buildConfigField "long", "buildTimestamp", generateTimestamp()
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        signingConfig signingConfigs.config
     }
     testOptions {
         animationsDisabled = true
@@ -177,6 +250,11 @@ android {
             versionNameSuffix "-debug"
             debuggable true
         }
+        applicationVariants.all { variant ->
+            variant.outputs.all {
+                outputFileName = "${generateBuildName()}.apk"
+            }
+        } // */
     }
 }
 

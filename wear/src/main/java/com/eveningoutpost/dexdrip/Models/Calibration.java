@@ -75,6 +75,26 @@ class DexOldSchoolParameters extends SlopeParameters {
 
 }
 
+class DexParametersTecMunky extends SlopeParameters {
+
+    /*
+    * TecMunky default vlaues and thresholds that can be only activated in settings, when in engineering mode.
+    * */
+
+    DexParametersTecMunky() {
+        LOW_SLOPE_1 = 0.55;
+        LOW_SLOPE_2 = 0.50;
+        HIGH_SLOPE_1 = 1.8;
+        HIGH_SLOPE_2 = 1.9;
+        DEFAULT_LOW_SLOPE_LOW = 0.55;
+        DEFAULT_LOW_SLOPE_HIGH = 0.50;
+        DEFAULT_SLOPE = 1;
+        DEFAULT_HIGH_SLOPE_HIGH = 1.8;
+        DEFAULT_HIGH_SLOPE_LOW = 1.7;
+    }
+
+}
+
 class DexParametersAdrian extends SlopeParameters {
 
     /*
@@ -685,6 +705,11 @@ public class Calibration extends Model {
 
         if (CollectionServiceStarter.isLimitter()) {
             return new LiParameters();
+        }
+
+        if (Pref.getBooleanDefaultFalse("engineering_mode") && Pref.getBooleanDefaultFalse("tecmunky_calibration_mode")) {
+            JoH.static_toast_long("Using possibly UNSAFE TecMunky calibration mode!");
+            return new DexParametersTecMunky();
         }
 
         if (Pref.getBooleanDefaultFalse("engineering_mode") && Pref.getBooleanDefaultFalse("old_school_calibration_mode")) {

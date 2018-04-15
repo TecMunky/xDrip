@@ -539,6 +539,12 @@
                     android:title="@string/plugin_override_all" />
                 <CheckBoxPreference
                     android:defaultValue="true"
+                    android:dependency="engineering_mode"
+                    android:key="tecmunky_calibration_mode"
+                    android:summary="@string/tecmunky_calibrations"
+                    android:title="@string/tecmunky_calibration_mode"/>
+                <CheckBoxPreference
+                    android:defaultValue="true"
                     android:key="use_double_calibrations"
                     android:summary="Ask for a second optional initial calibration blood test"
                     android:title="Double Calibrations" />

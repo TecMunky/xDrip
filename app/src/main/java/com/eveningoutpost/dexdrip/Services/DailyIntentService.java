@@ -42,7 +42,7 @@ public class DailyIntentService extends IntentService {
                 // @TecMunky -- save database before pruning - allows daily capture of database
                 if (Pref.getBooleanDefaultFalse("save_db_ondemand")) {
                     try {
-                        String export = DatabaseUtil.saveSql(getBaseContext(), "daily");
+                        String export = DatabaseUtil.saveSql(getBaseContext(), "/db/", "daily-");
                     } catch (Exception e) {
                         Log.e(TAG, "DailyIntentService exception on Daily Save Database - ", e);
                     }

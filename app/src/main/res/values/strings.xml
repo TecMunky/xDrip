@@ -659,6 +659,8 @@
     <string name="all_new_glucose_data_plugin">ALL new glucose data will be calculated and saved from the selected plugin and not from the standard xDrip algorithm. This is untested and may be inaccurate and buggy. Use with extreme caution.</string>
     <string name="old_school_calibrations">Original narrower range of allowed slopes within xDrip classic calibration algorithm (pre-2017). Default slopes more likely! (engineering mode only)</string>
     <string name="old_school_calibration_mode">Old school calibration mode</string>
+    <string name="tecmunky_calibrations">Wider range of allowed slopes. Less failsafes! (engineering mode only - precedes old school)</string>
+    <string name="tecmunky_calibration_mode">TecMunky Calibration Mode</string>
     <string name="how_receive_data">How are you going to receive data from your Dexcom/Transmitter?</string>
     <string name="nfc_options">Options for scanning NFC based sensors with the phone handset</string>
     <string name="nfc_scan_features">NFC Scan features</string>
