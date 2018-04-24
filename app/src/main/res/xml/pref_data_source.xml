@@ -109,9 +109,23 @@
             <CheckBoxPreference
                 android:defaultValue="false"
                 android:dependency="ob1_g5_use_transmitter_alg"
+                android:key="ob1_g5_restart_sensor"
+                android:summary="Automatically restart a sensor when it stops"
+                android:title="Restart Sensor"
+                />
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:dependency="ob1_g5_use_transmitter_alg"
                 android:key="ob1_g5_use_insufficiently_calibrated"
                 android:summary="Keep using data even if there are not enough good calibrations (Experimental!)"
                 android:title="Go on without calibrations"
+                />
+            <CheckBoxPreference
+                android:defaultValue="false"
+                android:dependency="ob1_g5_use_transmitter_alg"
+                android:key="ob1_g5_fallback_to_xdrip"
+                android:summary="Revert to xDrip algorithm if G5 doesn't provide glucose data (Potentially risky!)"
+                android:title="Fallback to xDrip"
                 />
             <CheckBoxPreference
                 android:defaultValue="true"
