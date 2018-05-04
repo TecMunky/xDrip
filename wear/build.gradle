@@ -130,6 +130,13 @@ android {
         resValue "string", "app_settings", "XDrip Settings"
         signingConfig signingConfigs.config
     }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
