@@ -906,6 +906,7 @@
     <string name="enter_your_transmitter_id_exactly">Enter your transmitter ID exactly as it is printed</string>
     <string name="which_type_of_device">Which type of device?</string>
     <string name="enable_local_broadcast">Enable local broadcast?</string>
+    <string name="broadcast_only_to">Broadcast only to?</string>
     <string name="enable_wear_os_sync">Enable Sync to Android Wear OS?</string>
     <string name="androidaps">AndroidAPS</string>
     <string name="androidwear">Android Wear OS</string>
@@ -923,4 +924,9 @@
     <string name="invalid_or_unsupported_code">Invalid or unsupported code!</string>
     <string name="g6_sensor_code">G6 Sensor Code</string>
     <string name="please_enter_printed_calibration_code">Please enter the printed calibration code number, 4 digits, eg: 5678</string>
+    <string name="enable_update_checks">Enable update checks?</string>
+    <string name="you_can_easily_roll_back_dialog_msg">With xDrip you can easily roll back to previous versions just by re-running the APK installer for the old version in your Downloads folder if you don\'t like the new version.\n\nWould you like to enable update checks?</string>
+    <string name="hey_fam">Hey Fam...</string>
+    <string name="you_have_update_checks_off">You have update checks switched off!\n\nWe try to fix bugs and add new features to xDrip+ over time.\n\nEvery 60 days this reminder will appear to ask you to turn update checking on.</string>
+    <string name="update_checking_enabled">Update checking enabled!</string>
 </resources>
