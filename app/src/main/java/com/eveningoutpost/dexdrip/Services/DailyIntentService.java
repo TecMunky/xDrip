@@ -3,6 +3,7 @@ package com.eveningoutpost.dexdrip.Services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.PowerManager;
+import android.text.format.DateFormat;
 
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.BgReading;
@@ -34,6 +35,9 @@ public class DailyIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        
+        String prefix = null;
+        
         // TODO background thread
         final PowerManager.WakeLock wl = JoH.getWakeLock("DailyIntentService", 120000);
         try {
@@ -45,15 +49,17 @@ public class DailyIntentService extends IntentService {
                 if (Pref.getBooleanDefaultFalse("save_db_ondemand")) {
                     
                     final long currentMilliseconds = System.currentTimeMillis();
-                    final StringBuilder predir = new StringBuilder();
-                    predir.append("/");
-                    predir.append(DateFormat.format("yyyy", currentMilliseconds));
-                    predir.append("/");
-                    predir.append(DateFormat.format("MM", currentMilliseconds));
-                    predir.append("/");
+                    final StringBuilder prefix_sb = new StringBuilder();
+                    prefix_sb.append("db/");
+                    prefix_sb.append(DateFormat.format("yyyy", currentMilliseconds));
+                    prefix_sb.append("/");
+                    prefix_sb.append(DateFormat.format("MM", currentMilliseconds));
+                    prefix_sb.append("/daily-");
+                    
+                    prefix = prefix_sb.toString();
                     
                     try {
-                        String export = DatabaseUtil.saveSql(getBaseContext(), predir, "daily-");
+                        String export = DatabaseUtil.saveSql(getBaseContext(), prefix);
                     } catch (Exception e) {
                         Log.e(TAG, "DailyIntentService exception on Daily Save Database - ", e);
                     }

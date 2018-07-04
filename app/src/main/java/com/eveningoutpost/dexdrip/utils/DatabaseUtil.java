@@ -51,15 +51,10 @@ public class DatabaseUtil {
 
     public static String saveSql(Context context) {
         // TecMunky 6/23/17 overload saveSql function to call modified function
-        return DatabaseUtil.saveSql(context, "/", "export-");
+        return DatabaseUtil.saveSql(context, "export");
     }
 
     public static String saveSql(Context context, String prefix) {
-        // TecMunky 6/23/17 overload saveSql function to call modified function
-        return DatabaseUtil.saveSql(context, "/", prefix);
-    }
-
-    public static String saveSql(Context context, String predir, String prefix) {
         // TecMunky 6/23/17 modify function with added prefix string variable
 
         FileInputStream srcStream = null;
@@ -80,7 +75,7 @@ public class DatabaseUtil {
             sb.append(dir);
             //sb.append("/export");
             // TecMunky 6/23/17 replace "/export" with "/" and prefix
-            sb.append(predir);
+            sb.append("/");
             sb.append(prefix);
             sb.append(DateFormat.format("yyyyMMdd-kkmmss", System.currentTimeMillis()));
             sb.append(".zip");
