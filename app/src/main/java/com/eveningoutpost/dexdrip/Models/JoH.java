@@ -702,6 +702,14 @@ public class JoH {
         return niceTimeScalar(t).replaceFirst("([A-z]).*$", "$1");
     }
 
+    public static String niceTimeScalarShortWithDecimalHours(long t) {
+        if (t > Constants.HOUR_IN_MS) {
+            return niceTimeScalar(t,1).replaceFirst("([A-z]).*$", "$1");
+        } else {
+            return niceTimeScalar(t).replaceFirst("([A-z]).*$", "$1");
+        }
+    }
+
 
     public static double tolerantParseDouble(String str) throws NumberFormatException {
         return Double.parseDouble(str.replace(",", "."));
@@ -911,29 +919,34 @@ public class JoH {
         static_toast(context, msg, Toast.LENGTH_LONG);
     }
 
-    public static void show_ok_dialog(final Activity activity, String title, String message, final Runnable runnable) {
-        try {
-            AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(activity, R.style.AppTheme));
-            builder.setTitle(title);
-            builder.setMessage(message);
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    try {
-                        dialog.dismiss();
-                    } catch (Exception e) {
-                        //
-                    }
-                    if (runnable != null) {
-                        runOnUiThreadDelayed(runnable, 10);
-                    }
-                }
-            });
+    public static void show_ok_dialog(final Activity activity, final String title, final String message, final Runnable runnable) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(activity, R.style.AppTheme));
+                    builder.setTitle(title);
+                    builder.setMessage(message);
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            try {
+                                dialog.dismiss();
+                            } catch (Exception e) {
+                                //
+                            }
+                            if (runnable != null) {
+                                runOnUiThreadDelayed(runnable, 10);
+                            }
+                        }
+                    });
 
-            builder.create().show();
-        } catch (Exception e) {
-            Log.wtf(TAG, "show_dialog exception: " + e);
-            static_toast_long(message);
-        }
+                    builder.create().show();
+                } catch (Exception e) {
+                    Log.wtf(TAG, "show_dialog exception: " + e);
+                    static_toast_long(message);
+                }
+            }
+        });
     }
 
     public static synchronized void playResourceAudio(int id) {
