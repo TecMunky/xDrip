@@ -279,7 +279,7 @@ public class CollectionServiceStarter {
         }
 
         startSyncService();
-        startDailyIntentService();
+        startDailyIntentService(); // (this.mContext);
         Log.d(TAG, collection_method);
 
       /*  // Start logging to logcat
@@ -408,17 +408,48 @@ public class CollectionServiceStarter {
         this.mContext.startService(new Intent(this.mContext, SyncService.class));
     }
 
-    private void startDailyIntentService() {
+    private void startDailyIntentService() { // Context context
+        //restartDailyIntentService(context);
+        // can probably do this with just startDailyIntentService without callint restart...
+        
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 4);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MINUTE, 10);
+        calendar.set(Calendar.SECOND, 10);
 
         final PendingIntent pi = PendingIntent.getService(this.mContext, 0, new Intent(this.mContext, DailyIntentService.class), PendingIntent.FLAG_UPDATE_CURRENT);
         final AlarmManager am = (AlarmManager) this.mContext.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
-        am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
+//        if (!Pref.getBooleanDefaultFalse("daily_intent_hourly")) {
+            am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
+//        } else {
+//            am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_HOUR, pi);
+//        }
+        //*/
     }
+
+    /*
+    public static void restartDailyIntentService(Context context) {
+        
+        final Calendar calendar = Calendar.getInstance();
+        /*
+        if (!Pref.getBooleanDefaultFalse("daily_intent_hourly")) {
+            calendar.set(Calendar.HOUR_OF_DAY, 4);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+        } else {
+            //calendar.add(Calendar.HOUR_OF_DAY, 1);
+            calendar.add(Calendar.MINUTE, 10);
+        }
+        //*/ /*
+        calendar.add(Calendar.MINUTE, 13);
+
+        final PendingIntent pi = PendingIntent.getService(context, 0, new Intent(context, DailyIntentService.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        final AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        am.cancel(pi);
+            am.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pi);
+    }
+    //*/
 
     private void stopBtShareService() {
         Log.d(TAG, "stopping bt share service");

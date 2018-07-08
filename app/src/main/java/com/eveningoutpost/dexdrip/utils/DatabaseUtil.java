@@ -51,10 +51,40 @@ public class DatabaseUtil {
 
     public static String saveSql(Context context) {
         // TecMunky 6/23/17 overload saveSql function to call modified function
-        return DatabaseUtil.saveSql(context, "export");
+        //return DatabaseUtil.saveSql(context, "export");
+        return DatabaseUtil.saveSql(context, "/", "export-");
+
     }
 
+    /*
+    public static String saveSqlDaily(Context context) {
+        // TecMunky 7/7/18 new daily call
+        String prefix = null;
+        
+        final long currentMilliseconds = System.currentTimeMillis();
+        final StringBuilder prefix_sb = new StringBuilder();
+        prefix_sb.append("db/2018");
+        //prefix_sb.append(DateFormat.format("yyyy", currentMilliseconds));
+        //prefix_sb.append("/");
+        //prefix_sb.append(DateFormat.format("MM", currentMilliseconds));
+        //prefix_sb.append("/daily-");
+        prefix_sb.append("/daily-");
+        
+        //prefix = "db/daily-"; // prefix_sb.toString(); //
+        //*/
+        /*
+        prefix = prefix_sb.toString();
+
+        return DatabaseUtil.saveSql(context, prefix);
+    }
+    //*/
+
     public static String saveSql(Context context, String prefix) {
+        // TecMunky 6/23/17 overload saveSql function to call modified function
+        return DatabaseUtil.saveSql(context, "/", prefix);
+    }
+
+    public static String saveSql(Context context, String predir, String prefix) {
         // TecMunky 6/23/17 modify function with added prefix string variable
 
         FileInputStream srcStream = null;
@@ -75,7 +105,15 @@ public class DatabaseUtil {
             sb.append(dir);
             //sb.append("/export");
             // TecMunky 6/23/17 replace "/export" with "/" and prefix
+            sb.append(predir); // sb.append("/");
+            
+            final long currentMilliseconds = System.currentTimeMillis();
+            
+            sb.append(DateFormat.format("yyyy", currentMilliseconds));
             sb.append("/");
+            sb.append(DateFormat.format("MM", currentMilliseconds));
+            sb.append("/");
+        
             sb.append(prefix);
             sb.append(DateFormat.format("yyyyMMdd-kkmmss", System.currentTimeMillis()));
             sb.append(".zip");
