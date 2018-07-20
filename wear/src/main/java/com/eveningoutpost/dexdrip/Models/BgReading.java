@@ -1143,6 +1143,11 @@ public class BgReading extends Model implements ShareUploadableBg {
             bgr.calculated_value = calculated_value;
             bgr.raw_data = raw_data / 1000d;
             bgr.filtered_data = bgr.raw_data;
+            if (sourceInfoAppend != null && sourceInfoAppend.equals("Backfill")) {
+                bgr.raw_data = BgReading.SPECIAL_G5_PLACEHOLDER;
+            } else {
+                bgr.calculateAgeAdjustedRawValue();
+            }
             bgr.appendSourceInfo("Medtrum Native");
             if (sourceInfoAppend != null && sourceInfoAppend.length() > 0) {
                 bgr.appendSourceInfo(sourceInfoAppend);
