@@ -107,12 +107,12 @@ public class DatabaseUtil {
             // TecMunky 6/23/17 replace "/export" with "/" and prefix
             sb.append(predir); // sb.append("/");
             
-            final long currentMilliseconds = System.currentTimeMillis();
+            //final long currentMilliseconds = System.currentTimeMillis();
             
-            sb.append(DateFormat.format("yyyy", currentMilliseconds));
-            sb.append("/");
-            sb.append(DateFormat.format("MM", currentMilliseconds));
-            sb.append("/");
+            //sb.append(DateFormat.format("yyyy", currentMilliseconds));
+            //sb.append("/");
+            //sb.append(DateFormat.format("MM", currentMilliseconds));
+            //sb.append("/");
         
             sb.append(prefix);
             sb.append(DateFormat.format("yyyyMMdd-kkmmss", System.currentTimeMillis()));
