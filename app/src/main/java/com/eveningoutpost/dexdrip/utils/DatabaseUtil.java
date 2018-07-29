@@ -52,40 +52,39 @@ public class DatabaseUtil {
     public static String saveSql(Context context) {
         // TecMunky 6/23/17 overload saveSql function to call modified function
         //return DatabaseUtil.saveSql(context, "export");
-        return DatabaseUtil.saveSql(context, "/", "export-");
+        return DatabaseUtil.saveSql(context, "export-");
 
     }
 
-    /*
-    public static String saveSqlDaily(Context context) {
+    /* /
+    public static String saveSqlIntent(Context context) {
         // TecMunky 7/7/18 new daily call
-        String prefix = null;
+        String prefix = "daily-";
+        
+        String predir = null;
         
         final long currentMilliseconds = System.currentTimeMillis();
-        final StringBuilder prefix_sb = new StringBuilder();
-        prefix_sb.append("db/2018");
-        //prefix_sb.append(DateFormat.format("yyyy", currentMilliseconds));
-        //prefix_sb.append("/");
-        //prefix_sb.append(DateFormat.format("MM", currentMilliseconds));
-        //prefix_sb.append("/daily-");
-        prefix_sb.append("/daily-");
+        final StringBuilder predir_sb = new StringBuilder();
         
-        //prefix = "db/daily-"; // prefix_sb.toString(); //
-        //*/
-        /*
-        prefix = prefix_sb.toString();
+        predir_sb.append("/db/");
+        predir_sb.append(DateFormat.format("yyyy", currentMilliseconds));
+        predir_sb.append("/");
+        predir_sb.append(DateFormat.format("MM", currentMilliseconds));
+        
+        //prefix = prefix_sb.toString();
 
-        return DatabaseUtil.saveSql(context, prefix);
+        return DatabaseUtil.saveSql(context, predir_sb.toString(), prefix);
     }
     //*/
 
     public static String saveSql(Context context, String prefix) {
-        // TecMunky 6/23/17 overload saveSql function to call modified function
-        return DatabaseUtil.saveSql(context, "/", prefix);
+        // TecMunky 07/28/18 overload saveSql function to call modified function 
+        return DatabaseUtil.saveSql(context, "", prefix);
     }
 
     public static String saveSql(Context context, String predir, String prefix) {
-        // TecMunky 6/23/17 modify function with added prefix string variable
+        // TecMunky 06/23/17 modify function with added prefix string variable
+        // TecMunky 07/28/18 modify function with added predir string variable
 
         FileInputStream srcStream = null;
         BufferedInputStream biStream = null;
@@ -98,23 +97,20 @@ public class DatabaseUtil {
 
             final String databaseName = new Configuration.Builder(context).create().getDatabaseName();
 
-            final String dir = getExternalDir();
+            final String dir = getExternalDir();// + predir;
             makeSureDirectoryExists(dir);
 
             final StringBuilder sb = new StringBuilder();
             sb.append(dir);
-            //sb.append("/export");
-            // TecMunky 6/23/17 replace "/export" with "/" and prefix
-            sb.append(predir); // sb.append("/");
             
-            //final long currentMilliseconds = System.currentTimeMillis();
+            // TecMunky 07/28/18 add predir, test predir
+            sb.append(predir);
+            makeSureDirectoryExists(sb.toString());
             
-            //sb.append(DateFormat.format("yyyy", currentMilliseconds));
-            //sb.append("/");
-            //sb.append(DateFormat.format("MM", currentMilliseconds));
-            //sb.append("/");
-        
+            // TecMunky 06/23/17 replace "/export" with "/" and prefix
+            sb.append("/");
             sb.append(prefix);
+            
             sb.append(DateFormat.format("yyyyMMdd-kkmmss", System.currentTimeMillis()));
             sb.append(".zip");
             zipFilename = sb.toString();

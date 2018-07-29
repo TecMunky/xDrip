@@ -3,7 +3,7 @@ package com.eveningoutpost.dexdrip.Services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.os.PowerManager;
-//import android.text.format.DateFormat;
+import android.text.format.DateFormat;
 
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.BgReading;
@@ -37,37 +37,40 @@ public class DailyIntentService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         
-//        String prefix = null;
-        
-        // setup next Intent
-        //CollectionServiceStarter.restartDailyIntentService(getBaseContext());
-        
-        // TODO background thread
         final PowerManager.WakeLock wl = JoH.getWakeLock("DailyIntentService", 120000);
         try {
             if (JoH.pratelimit("daily-intent-service", 60000)) {
                 Log.i(TAG, "DailyIntentService onHandleIntent Starting");
                 Long start = JoH.tsl();
 
+
+    /* /
+    public static String saveSqlIntent(Context context) {
+    */
+        // TecMunky 7/7/18 new daily call
+        String prefix = "daily-";
+        
+        String predir = null;
+        
+        final long currentMilliseconds = System.currentTimeMillis();
+        final StringBuilder predir_sb = new StringBuilder();
+        
+        predir_sb.append("/db/");
+        predir_sb.append(DateFormat.format("yyyy", currentMilliseconds));
+        predir_sb.append("/");
+        predir_sb.append(DateFormat.format("MM", currentMilliseconds));
+        
+    /* 
+        return 
+    }
+    //*/
+
                 // @TecMunky -- save database before pruning - allows daily capture of database
                 if (Pref.getBooleanDefaultFalse("save_db_ondemand")) {
-                    /*
-                    final long currentMilliseconds = System.currentTimeMillis();
-                    final StringBuilder prefix_sb = new StringBuilder();
-                    prefix_sb.append("db/2018");
-                    //prefix_sb.append(DateFormat.format("yyyy", currentMilliseconds));
-                    //prefix_sb.append("/");
-                    //prefix_sb.append(DateFormat.format("MM", currentMilliseconds));
-                    //prefix_sb.append("/daily-");
-                    prefix_sb.append("/hourly-");
-                    
-                    prefix = "db/daily-"; // prefix_sb.toString(); //
-                    //*/
-                    
                     try {
-                        //String export = DatabaseUtil.saveSqlDaily(getBaseContext()); //prefix); //"db/2018/hourly-");
-                        String export = DatabaseUtil.saveSql(getBaseContext(), "/db/", "daily-");
-                        //String export = DatabaseUtil.saveSql(getBaseContext(), "daily-"); //prefix); //"db/2018/hourly-");
+                        String export = DatabaseUtil.saveSql(getBaseContext(), predir_sb.toString(), prefix);
+                        //String export = DatabaseUtil.saveSqlIntent(getBaseContext()); //prefix); //"db/2018/hourly-");
+                        //String export = DatabaseUtil.saveSql(getBaseContext(), "/db/", "daily-");
                     } catch (Exception e) {
                         Log.e(TAG, "DailyIntentService exception on Daily Save Database - ", e);
                     }
