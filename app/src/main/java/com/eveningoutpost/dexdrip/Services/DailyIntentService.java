@@ -43,34 +43,21 @@ public class DailyIntentService extends IntentService {
                 Log.i(TAG, "DailyIntentService onHandleIntent Starting");
                 Long start = JoH.tsl();
 
-
-    /* /
-    public static String saveSqlIntent(Context context) {
-    */
-        // TecMunky 7/7/18 new daily call
-        String prefix = "daily-";
-        
-        String predir = null;
-        
-        final long currentMilliseconds = System.currentTimeMillis();
-        final StringBuilder predir_sb = new StringBuilder();
-        
-        predir_sb.append("/db/");
-        predir_sb.append(DateFormat.format("yyyy", currentMilliseconds));
-        predir_sb.append("/");
-        predir_sb.append(DateFormat.format("MM", currentMilliseconds));
-        
-    /* 
-        return 
-    }
-    //*/
+                // TecMunky 7/30/18 save to folder structure /yyyy/MM
+                String prefix = "daily-";
+                
+                final long currentMilliseconds = System.currentTimeMillis();
+                final StringBuilder dir_sb = new StringBuilder();
+                
+                dir_sb.append("/db/");
+                dir_sb.append(DateFormat.format("yyyy", currentMilliseconds));
+                dir_sb.append("/");
+                dir_sb.append(DateFormat.format("MM", currentMilliseconds));
 
                 // @TecMunky -- save database before pruning - allows daily capture of database
                 if (Pref.getBooleanDefaultFalse("save_db_ondemand")) {
                     try {
-                        String export = DatabaseUtil.saveSql(getBaseContext(), predir_sb.toString(), prefix);
-                        //String export = DatabaseUtil.saveSqlIntent(getBaseContext()); //prefix); //"db/2018/hourly-");
-                        //String export = DatabaseUtil.saveSql(getBaseContext(), "/db/", "daily-");
+                        String export = DatabaseUtil.saveSql(getBaseContext(), dir_sb.toString(), prefix);
                     } catch (Exception e) {
                         Log.e(TAG, "DailyIntentService exception on Daily Save Database - ", e);
                     }
