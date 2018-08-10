@@ -812,11 +812,6 @@
                 android:key="save_db_ondemand"
                 android:summary="@string/allow_daily_db_save"
                 android:title="@string/daily_save_db" />
-            <CheckBoxPreference
-                android:defaultValue="false"
-                android:key="daily_intent_hourly"
-                android:summary="@string/allow_hourly_intent"
-                android:title="@string/hourly_intent" />
             <EditTextPreference
                 android:key="retention_days_bg_reading"
                 android:title="Glucose Retention"
