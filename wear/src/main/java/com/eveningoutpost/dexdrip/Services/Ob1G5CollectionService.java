@@ -53,6 +53,7 @@ import com.polidea.rxandroidble.RxBleDeviceServices;
 import com.polidea.rxandroidble.exceptions.BleScanException;
 import com.polidea.rxandroidble.internal.RxBleLog;
 import com.polidea.rxandroidble.internal.connection.RxBleGattCallback;
+import com.polidea.rxandroidble.scan.ScanFilter;
 import com.polidea.rxandroidble.scan.ScanResult;
 import com.polidea.rxandroidble.scan.ScanSettings;
 
@@ -358,8 +359,9 @@ public class Ob1G5CollectionService extends G5BaseService {
 
     private boolean useMinimizeScanningStrategy() {
         tryLoadingSavedMAC();
-        UserError.Log.d(TAG, "minimize: " + minimize_scanning + " mac: " + transmitterMAC + " lastfailed:" + lastConnectFailed + " nowfail:" + connectNowFailures + " stimeout:" + scanTimeouts + " modulo:" + ((connectNowFailures + scanTimeouts) % 2));
-        return minimize_scanning && transmitterMAC != null && (!lastConnectFailed || (connectNowFailures + scanTimeouts) % 2 == 1);
+        final int modulo = (connectNowFailures + scanTimeouts) % 2;
+        UserError.Log.d(TAG, "minimize: " + minimize_scanning + " mac: " + transmitterMAC + " lastfailed:" + lastConnectFailed + " nowfail:" + connectNowFailures + " stimeout:" + scanTimeouts + " modulo:" + modulo);
+        return minimize_scanning && transmitterMAC != null && (!lastConnectFailed || (modulo == 1)) && (DexSyncKeeper.isReady(transmitterID));
     }
 
     private void resetState() {
@@ -428,13 +430,13 @@ public class Ob1G5CollectionService extends G5BaseService {
                                 .setScanMode(android_wear ? ScanSettings.SCAN_MODE_BALANCED :
                                         minimize_scanning ? ScanSettings.SCAN_MODE_BALANCED : ScanSettings.SCAN_MODE_LOW_LATENCY)
                                 // .setScanMode(ScanSettings.SCAN_MODE_BALANCED)
-                                .build()//,
+                                .build(),
 
                         // scan filter doesn't work reliable on android sdk 23+
-                        //new ScanFilter.Builder()
+                        new ScanFilter.Builder()
                         //.
                         //          .setDeviceName(getTransmitterBluetoothName())
-                        //         .build()
+                                 .build()
 
                 )
                         // observe on?
