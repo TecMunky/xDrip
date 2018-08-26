@@ -52,7 +52,7 @@ public class MissedReadingService extends IntentService {
 
             Log.d(TAG, "MissedReadingService onHandleIntent"); // test debug log
 
-            final long stale_millis = Home.stale_data_millis();
+            final long stale_millis = (59500 * 4); // force aggressive restart at 4 minutes //Home.stale_data_millis();
 
             // send to pebble
             if (Pref.getBoolean("broadcast_to_pebble", false) && (PebbleUtil.getCurrentPebbleSyncType() != 1) && !BgReading.last_within_millis(stale_millis)) {
