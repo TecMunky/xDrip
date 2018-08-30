@@ -612,6 +612,10 @@
     <string name="rfduino_support">RFDUINO support</string>
     <string name="repeatedly_restart_collection_service">Repeatedly restart the collection service at any hint of missing data. Enable only if you are getting data loss.</string>
     <string name="aggressive_service_restarts">Aggressive service restarts</string>
+
+    <string name="extra_restart_collection_service">Always restart the collection service. Enable only if you are getting data loss even with aggressive service restarts.</string>
+    <string name="extra_aggressive_service_restarts">Extra aggressive restarts</string>
+
     <string name="predictive_readings_old">Old method - Not Recommended! Attempts to predict readings each minute based on the past few values.</string>
     <string name="use_external_blukon_algorithm_summary">Use an out of process libre algorithm. (blukon/NFC/LibreAlarm)</string>
     <string name="display_predictive_values">Display Predictive Values</string>

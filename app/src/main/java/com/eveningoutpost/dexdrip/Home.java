@@ -3016,7 +3016,6 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     }
 
     public static long stale_data_millis() {
-        //return (60000 * 4);
         if (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm)
             return (60000 * 13);
         return (60000 * 11);

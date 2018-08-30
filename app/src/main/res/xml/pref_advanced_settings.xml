@@ -755,6 +755,12 @@
                 android:title="@string/aggressive_service_restarts" />
 
             <CheckBoxPreference
+                android:defaultValue="true"
+                android:key="extra_aggressive_service_restart"
+                android:summary="@string/extra_restart_collection_service"
+                android:title="@string/extra_aggressive_service_restarts" />
+
+            <CheckBoxPreference
                 android:defaultValue="false"
                 android:key="interpret_raw"
                 android:summary="@string/interpret_share_raw"
