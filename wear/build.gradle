@@ -97,6 +97,7 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 
 android {
+<<<<<<< HEAD
     signingConfigs {
         config {
             keyAlias keystoreProperties['keyAlias']
@@ -106,6 +107,9 @@ android {
         }
     }
     compileSdkVersion 23
+=======
+    compileSdkVersion 26
+>>>>>>> master
     buildToolsVersion '27.0.3'
     lintOptions {
         checkReleaseBuilds false

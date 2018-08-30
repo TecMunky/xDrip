@@ -7,6 +7,7 @@ import android.text.format.DateFormat;
 
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.BgReading;
+import com.eveningoutpost.dexdrip.Models.DesertSync;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.StepCounter;
 import com.eveningoutpost.dexdrip.Models.RollCall;
@@ -120,6 +121,11 @@ public class DailyIntentService extends IntentService {
                     if (Home.get_master_or_follower()) RollCall.pruneOld(0);
                 } catch (Exception e) {
                     Log.e(TAG, "exception on RollCall prune " + e);
+                }
+                try {
+                    DesertSync.cleanup();
+                } catch (Exception e) {
+                    Log.e(TAG,"Exception cleaning up DesertSync");
                 }
                 try {
                     Telemetry.sendFirmwareReport();
