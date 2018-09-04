@@ -16,7 +16,7 @@ public class RouteTools {
 
     private static final String TAG = RouteTools.class.getSimpleName();
 
-    static boolean reachable(final String checkIp) {
+    public static boolean reachable(final String checkIp) {
         try {
             final InetAddress check = ip(checkIp);
             List<InterfaceAddress> addrs = getLikelyInterfaceAddresses();
@@ -66,7 +66,7 @@ public class RouteTools {
         return results;
     }
 
-    static boolean isLocal(final InetAddress addr) {
+    public static boolean isLocal(final InetAddress addr) {
         return inSameNetwork(addr, ip("192.168.0.0"), 16)
                 || inSameNetwork(addr, ip("172.16.0.0"), 12)
                 || inSameNetwork(addr, ip("10.0.0.0"), 8);
@@ -87,7 +87,11 @@ public class RouteTools {
     }
 
 
-    static InetAddress ip(String ip) {
+    public static InetAddress ip(final String ip) {
         return com.google.common.net.InetAddresses.forString(ip);
+    }
+
+    public static String ip(final InetAddress ip) {
+        return ip.getHostAddress().replace("/", "");
     }
 }
