@@ -56,7 +56,7 @@ public class DatabaseUtil {
 
     public static String saveSql(Context context, String prefix) {
         // TecMunky 07/30/18 overload saveSql function to call modified function 
-        return DatabaseUtil.saveSql(context, "", prefix);
+        return DatabaseUtil.saveSql(context, "/db", prefix);
     }
 
     public static String saveSql(Context context, String predir, String prefix) {
