@@ -37,7 +37,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.Toolbar;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -62,7 +61,7 @@ import android.widget.Toast;
 import com.crashlytics.android.Crashlytics;
 import com.eveningoutpost.dexdrip.G5Model.Ob1G5StateMachine;
 import com.eveningoutpost.dexdrip.ImportedLibraries.dexcom.Dex_Constants;
-import com.eveningoutpost.dexdrip.Models.Accuracy;
+import com.eveningoutpost.dexdrip.ImportedLibraries.usbserial.util.HexDump;
 import com.eveningoutpost.dexdrip.Models.ActiveBgAlert;
 import com.eveningoutpost.dexdrip.Models.ActiveBluetoothDevice;
 import com.eveningoutpost.dexdrip.Models.BgReading;
@@ -96,14 +95,14 @@ import com.eveningoutpost.dexdrip.UtilityModels.Notifications;
 import com.eveningoutpost.dexdrip.UtilityModels.PersistentStore;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.UtilityModels.PrefsViewImpl;
-import com.eveningoutpost.dexdrip.UtilityModels.PumpStatus;
 import com.eveningoutpost.dexdrip.UtilityModels.SendFeedBack;
 import com.eveningoutpost.dexdrip.UtilityModels.ShotStateStore;
 import com.eveningoutpost.dexdrip.UtilityModels.SourceWizard;
+import com.eveningoutpost.dexdrip.UtilityModels.StatusLine;
 import com.eveningoutpost.dexdrip.UtilityModels.UndoRedo;
 import com.eveningoutpost.dexdrip.UtilityModels.UpdateActivity;
 import com.eveningoutpost.dexdrip.UtilityModels.VoiceCommands;
-import com.eveningoutpost.dexdrip.calibrations.CalibrationAbstract;
+import com.eveningoutpost.dexdrip.calibrations.NativeCalibrationPipe;
 import com.eveningoutpost.dexdrip.calibrations.PluggableCalibration;
 import com.eveningoutpost.dexdrip.dagger.Injectors;
 import com.eveningoutpost.dexdrip.databinding.ActivityHomeBinding;
@@ -114,7 +113,6 @@ import com.eveningoutpost.dexdrip.insulin.pendiq.Pendiq;
 import com.eveningoutpost.dexdrip.languageeditor.LanguageEditor;
 import com.eveningoutpost.dexdrip.profileeditor.DatePickerFragment;
 import com.eveningoutpost.dexdrip.profileeditor.ProfileAdapter;
-import com.eveningoutpost.dexdrip.stats.StatsResult;
 import com.eveningoutpost.dexdrip.ui.BaseShelf;
 import com.eveningoutpost.dexdrip.ui.MicroStatus;
 import com.eveningoutpost.dexdrip.ui.MicroStatusImpl;
@@ -134,7 +132,6 @@ import com.eveningoutpost.dexdrip.utils.LibreTrendGraph;
 import com.eveningoutpost.dexdrip.utils.Preferences;
 import com.eveningoutpost.dexdrip.utils.SdcardImportExport;
 import com.eveningoutpost.dexdrip.wearintegration.Amazfitservice;
-import com.eveningoutpost.dexdrip.wearintegration.ExternalStatusService;
 import com.eveningoutpost.dexdrip.wearintegration.WatchUpdaterService;
 import com.github.amlcurran.showcaseview.ShowcaseView;
 import com.github.amlcurran.showcaseview.targets.Target;
@@ -147,6 +144,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
+import java.text.MessageFormat;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -174,8 +172,6 @@ import static com.eveningoutpost.dexdrip.UtilityModels.ColorCache.getCol;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.DAY_IN_MS;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.HOUR_IN_MS;
 import static com.eveningoutpost.dexdrip.UtilityModels.Constants.MINUTE_IN_MS;
-import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPlugin;
-import static com.eveningoutpost.dexdrip.calibrations.PluggableCalibration.getCalibrationPluginFromPreferences;
 
 
 public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPermissionsResultCallback {
@@ -281,12 +277,14 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
     boolean watchkeypadset = false;
     long watchkeypad_timestamp = -1;
     private wordDataWrapper searchWords = null;
-    private AlertDialog dialog;
+    public AlertDialog dialog;
     private AlertDialog helper_dialog;
     private AlertDialog status_helper_dialog;
     private PopupInitialStatusHelperBinding initial_status_binding;
     private ActivityHomeBinding binding;
     private boolean is_newbie;
+    private boolean checkedeula;
+
 
     @Inject
     BaseShelf homeShelf;
@@ -356,7 +354,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         set_is_follower();
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-        final boolean checkedeula = checkEula();
+        checkedeula = checkEula();
 
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         binding.setVs(homeShelf);
@@ -614,40 +612,19 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         currentBgValueText.setText(""); // clear any design prototyping default
 
+
+
+    }
+
+    private boolean firstRunDialogs(final boolean checkedeula) {
+
         if (checkedeula && is_newbie && ((dialog == null) || !dialog.isShowing())) {
-            if (!SdcardImportExport.handleBackup(this)) {
-                if (!Pref.getString("units", "mgdl").equals("mmol")) {
-                    Log.d(TAG, "Newbie mmol prompt");
-                    if (Experience.defaultUnitsAreMmol()) {
-                        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                        builder.setTitle(R.string.glucose_units_mmol_or_mgdl);
-                        builder.setMessage(R.string.is_your_typical_glucose_value);
 
-                        builder.setNegativeButton("5.5", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                Pref.setString("units", "mmol");
-                                Preferences.handleUnitsChange(null, "mmol", null);
-                                Home.staticRefreshBGCharts();
-                                toast(getString(R.string.settings_updated_to_mmol));
-                            }
-                        });
+            if (Experience.processSteps(this)) {
 
-                        builder.setPositiveButton("100", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Home.staticRefreshBGCharts();
-                                dialog.dismiss();
-                            }
-                        });
-
-                        dialog = builder.create();
-                        dialog.show();
-                    }
-                }
             }
         }
-
+        return true; // not sure about this
     }
 
     private boolean checkBatteryOptimization() {
@@ -741,7 +718,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
 
     // handle sending the intent
-    private void processFingerStickCalibration(final double glucosenumber, final double timeoffset, boolean dontask) {
+    private synchronized void processFingerStickCalibration(final double glucosenumber, final double timeoffset, boolean dontask) {
         JoH.clearCache();
         UserError.Log.uel(TAG, "Processing Finger stick Calibration with values: glucose: " + glucosenumber + " timeoffset: " + timeoffset + " full auto: " + dontask);
         if (glucosenumber > 0) {
@@ -1085,6 +1062,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                                     public void onClick(DialogInterface dialog, int which) {
                                         dialog.dismiss();
                                         bt.removeState(BloodTest.STATE_VALID);
+                                        NativeCalibrationPipe.removePendingCalibration((int)bt.mgdl);
                                         GcmActivity.syncBloodTests();
                                         if (Home.get_show_wear_treatments())
                                             BloodTest.pushBloodTestSyncToWatch(bt, false);
@@ -1402,7 +1380,9 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         allWords = allWords.replaceAll(":", "."); // fix real times
         allWords = allWords.replaceAll("(\\d)([a-zA-Z])", "$1 $2"); // fix like 22mm
         allWords = allWords.replaceAll("([0-9]\\.[0-9])([0-9][0-9])", "$1 $2"); // fix multi number order like blood 3.622 grams
-        allWords = allWords.replaceAll(new String(RTL_BYTES, StandardCharsets.UTF_8),"");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            allWords = allWords.replaceAll(new String(RTL_BYTES, StandardCharsets.UTF_8),"");
+        }
         allWords = allWords.toLowerCase();
         
         Log.d(TAG, "Processing speech input allWords second: " + allWords + " UUID: " + thisuuid);
@@ -1896,6 +1876,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         HeyFamUpdateOptInDialog.heyFam(this); // remind about updates
+        firstRunDialogs(checkedeula);
 
         Inevitable.task("home-resume-bg", 2000, new Runnable() {
                     @Override
@@ -2343,13 +2324,14 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             updateCurrentBgInfoForWifiWixel(collector, notificationText);
         } else if (is_follower || collector.equals(DexCollectionType.NSEmulator)) {
             displayCurrentInfo();
-            Notifications.start();
+            Inevitable.task("home-notifications-start", 5000, Notifications::start);
         } else if (!alreadyDisplayedBgInfoCommon && (DexCollectionType.getDexCollectionType() == DexCollectionType.LibreAlarm || collector == DexCollectionType.Medtrum)) {
             updateCurrentBgInfoCommon(collector, notificationText);
         }
         if (collector.equals(DexCollectionType.Disabled)) {
             notificationText.append("\n DATA SOURCE DISABLED");
             if (!Experience.gotData()) {
+                // TODO should this move to Experience::processSteps ?
                 final Activity activity = this;
                 JoH.runOnUiThreadDelayed(new Runnable() {
                     @Override
@@ -2367,15 +2349,15 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
             notificationText.append("\n USING FAKE DATA SOURCE !!!");
         }
         if (Pref.getLong("alerts_disabled_until", 0) > new Date().getTime()) {
-            notificationText.append("\n ALL ALERTS CURRENTLY DISABLED");
+            notificationText.append("\n " + getString(R.string.all_alerts_currently_disabled));
         } else if (Pref.getLong("low_alerts_disabled_until", 0) > new Date().getTime()
                 &&
                 Pref.getLong("high_alerts_disabled_until", 0) > new Date().getTime()) {
-            notificationText.append("\n LOW AND HIGH ALERTS CURRENTLY DISABLED");
+            notificationText.append("\n " + getString(R.string.low_and_high_alerts_currently_disabled));
         } else if (Pref.getLong("low_alerts_disabled_until", 0) > new Date().getTime()) {
-            notificationText.append("\n LOW ALERTS CURRENTLY DISABLED");
+            notificationText.append("\n " + getString(R.string.low_alerts_currently_disabled));
         } else if (Pref.getLong("high_alerts_disabled_until", 0) > new Date().getTime()) {
-            notificationText.append("\n HIGH ALERTS CURRENTLY DISABLED");
+            notificationText.append("\n " + getString(R.string.high_alerts_currently_disabled));
         }
         NavigationDrawerFragment navigationDrawerFragment = (NavigationDrawerFragment) getFragmentManager().findFragmentById(R.id.navigation_drawer);
 
@@ -2575,10 +2557,11 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         } else {
 
             if (Ob1G5CollectionService.isG5WarmingUp() || (Ob1G5CollectionService.isPendingStart())) {
-                notificationText.setText("G5 Transmitter is still Warming Up, please wait");
+                notificationText.setText(R.string.sensor_is_still_warming_up_please_wait);
                 showUncalibratedSlope();
             } else {
-                if ((BgReading.latest(3).size() > 2) || (Ob1G5CollectionService.onlyUsingNativeMode() && BgReading.latest(1).size() > 0)) {
+                final int calculatedBgReadingsCount = BgReading.latest(3).size();
+                if ((calculatedBgReadingsCount > 2) || (Ob1G5CollectionService.onlyUsingNativeMode() && BgReading.latest(1).size() > 0)) {
                     // TODO potential to calibrate off stale data here
                     final List<Calibration> calibrations = Calibration.latestValid(2);
                     if ((calibrations.size() > 1) || Ob1G5CollectionService.onlyUsingNativeMode()) {
@@ -2605,6 +2588,7 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
                         }
                     }
                 } else {
+                    UserError.Log.d(TAG,"NOT ENOUGH CALCULATED READINGS: "+calculatedBgReadingsCount);
                     if (!BgReading.isDataSuitableForDoubleCalibration() && (!Ob1G5CollectionService.usingNativeMode() || Ob1G5CollectionService.fallbackToXdripAlgorithm())) {
                         notificationText.setText(R.string.please_wait_need_two_readings_first);
                         showInitialStatusHelper();
@@ -2860,171 +2844,12 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
 
         if (Pref.getBoolean("extra_status_line", false)) {
-            extraStatusLineText.setText(extraStatusLine());
+            extraStatusLineText.setText(StatusLine.extraStatusLine());
             extraStatusLineText.setVisibility(View.VISIBLE);
         } else {
             extraStatusLineText.setText("");
             extraStatusLineText.setVisibility(View.GONE);
         }
-    }
-
-    // TODO EXTRACT METHOD
-    @NonNull
-    public static String extraStatusLine() {
-
-        final StringBuilder extraline = new StringBuilder();
-        final Calibration lastCalibration = Calibration.lastValid();
-        if (Pref.getBoolean("status_line_calibration_long", false) && lastCalibration != null) {
-            if (extraline.length() != 0) extraline.append(' ');
-            extraline.append("slope = ");
-            extraline.append(String.format("%.2f", lastCalibration.slope));
-            extraline.append(' ');
-            extraline.append("inter = ");
-            extraline.append(String.format("%.2f", lastCalibration.intercept));
-        }
-
-        if (Pref.getBoolean("status_line_calibration_short", false) && lastCalibration != null) {
-            if (extraline.length() != 0) extraline.append(' ');
-            extraline.append("s:");
-            extraline.append(String.format("%.2f", lastCalibration.slope));
-            extraline.append(' ');
-            extraline.append("i:");
-            extraline.append(String.format("%.2f", lastCalibration.intercept));
-        }
-
-        if (Pref.getBoolean("status_line_avg", false)
-                || Pref.getBoolean("status_line_a1c_dcct", false)
-                || Pref.getBoolean("status_line_a1c_ifcc", false)
-                || Pref.getBoolean("status_line_in", false)
-                || Pref.getBoolean("status_line_high", false)
-                || Pref.getBoolean("status_line_low", false)
-                || Pref.getBoolean("status_line_stdev", false)
-                || Pref.getBoolean("status_line_carbs", false)
-                || Pref.getBoolean("status_line_insulin", false)
-                || Pref.getBoolean("status_line_royce_ratio", false)
-                || Pref.getBoolean("status_line_accuracy", false)
-                || Pref.getBoolean("status_line_capture_percentage", false)
-                || Pref.getBoolean("status_line_realtime_capture_percentage", false)
-                || Pref.getBoolean("status_line_pump_reservoir", false)
-                || Pref.getBooleanDefaultFalse("status_line_external_status")) {
-
-            final StatsResult statsResult = new StatsResult(Pref.getInstance(), Pref.getBooleanDefaultFalse("extra_status_stats_24h"));
-
-            if (Pref.getBoolean("status_line_avg", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getAverageUnitised());
-            }
-            if (Pref.getBoolean("status_line_a1c_dcct", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getA1cDCCT());
-            }
-            if (Pref.getBoolean("status_line_a1c_ifcc", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getA1cIFCC());
-            }
-            if (Pref.getBoolean("status_line_in", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getInPercentage());
-            }
-            if (Pref.getBoolean("status_line_high", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getHighPercentage());
-            }
-            if (Pref.getBoolean("status_line_low", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getLowPercentage());
-            }
-            if (Pref.getBoolean("status_line_stdev", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getStdevUnitised());
-            }
-            if (Pref.getBoolean("status_line_carbs", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                //extraline.append("Carbs: " + statsResult.getTotal_carbs());
-                extraline.append("Carbs:" + Math.round(statsResult.getTotal_carbs()));
-            }
-            if (Pref.getBoolean("status_line_insulin", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append("U:" + JoH.qs(statsResult.getTotal_insulin(), 2));
-            }
-            if (Pref.getBoolean("status_line_royce_ratio", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append("C/I:" + JoH.qs(statsResult.getRatio(), 2));
-            }
-            if (Pref.getBoolean("status_line_capture_percentage", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getCapturePercentage(false));
-            }
-            if (Pref.getBoolean("status_line_realtime_capture_percentage", false) &&
-                    statsResult.canShowRealtimeCapture()) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(statsResult.getRealtimeCapturePercentage(false));
-            }
-            if (Pref.getBoolean("status_line_accuracy", false)) {
-                final long accuracy_period = DAY_IN_MS * 3;
-                if (extraline.length() != 0) extraline.append(' ');
-                final String accuracy_report = Accuracy.evaluateAccuracy(accuracy_period);
-                if ((accuracy_report != null) && (accuracy_report.length() > 0)) {
-                    extraline.append(accuracy_report);
-                } else {
-                    final String accuracy = BloodTest.evaluateAccuracy(accuracy_period);
-                    extraline.append(((accuracy != null) ? " " + accuracy : ""));
-                }
-            }
-
-            if (Pref.getBoolean("status_line_pump_reservoir", false)) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(PumpStatus.getBolusIoBString());
-                extraline.append(PumpStatus.getReservoirString());
-                extraline.append(PumpStatus.getBatteryString());
-            }
-
-            if (Pref.getBooleanDefaultFalse("status_line_external_status")) {
-                if (extraline.length() != 0) extraline.append(' ');
-                extraline.append(ExternalStatusService.getLastStatusLine());
-            }
-
-        }
-        if (Pref.getBoolean("extra_status_calibration_plugin", false)) {
-            final CalibrationAbstract plugin = getCalibrationPluginFromPreferences(); // make sure do this only once
-            if (plugin != null) {
-                final CalibrationAbstract.CalibrationData pcalibration = plugin.getCalibrationData();
-                if (extraline.length() > 0) extraline.append("\n"); // not tested on the widget yet
-                if (pcalibration != null)
-                    extraline.append("(" + plugin.getAlgorithmName() + ") s:" + JoH.qs(pcalibration.slope, 2) + " i:" + JoH.qs(pcalibration.intercept, 2));
-                BgReading bgReading = BgReading.last();
-                if (bgReading != null) {
-                    final boolean doMgdl = Pref.getString("units", "mgdl").equals("mgdl");
-                    extraline.append(" \u21D2 " + BgGraphBuilder.unitized_string(plugin.getGlucoseFromSensorValue(bgReading.age_adjusted_raw_value), doMgdl) + " " + BgGraphBuilder.unit(doMgdl));
-                }
-            }
-
-            // If we are using the plugin as the primary then show xdrip original as well
-            if (Pref.getBooleanDefaultFalse("display_glucose_from_plugin") || Pref.getBooleanDefaultFalse("use_pluggable_alg_as_primary")) {
-                final CalibrationAbstract plugin_xdrip = getCalibrationPlugin(PluggableCalibration.Type.xDripOriginal); // make sure do this only once
-                if (plugin_xdrip != null) {
-                    final CalibrationAbstract.CalibrationData pcalibration = plugin_xdrip.getCalibrationData();
-                    if (extraline.length() > 0)
-                        extraline.append("\n"); // not tested on the widget yet
-                    if (pcalibration != null)
-                        extraline.append("(" + plugin_xdrip.getAlgorithmName() + ") s:" + JoH.qs(pcalibration.slope, 2) + " i:" + JoH.qs(pcalibration.intercept, 2));
-                    BgReading bgReading = BgReading.last();
-                    if (bgReading != null) {
-                        final boolean doMgdl = Pref.getString("units", "mgdl").equals("mgdl");
-                        extraline.append(" \u21D2 " + BgGraphBuilder.unitized_string(plugin_xdrip.getGlucoseFromSensorValue(bgReading.age_adjusted_raw_value), doMgdl) + " " + BgGraphBuilder.unit(doMgdl));
-                    }
-                }
-            }
-
-        }
-
-        if (Pref.getBoolean("status_line_time", false)) {
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-            if (extraline.length() != 0) extraline.append(' ');
-            extraline.append(sdf.format(new Date()));
-        }
-        return extraline.toString();
-
     }
 
     public static long stale_data_millis() {
@@ -3110,7 +2935,8 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
 
         if ((!small_width) || (notificationText.length() > 0)) notificationText.append("\n");
         if (!small_width) {
-            notificationText.append(minutes + ((minutes == 1) ? getString(R.string.space_minute_ago) : getString(R.string.space_minutes_ago)));
+            final String fmt = getString(R.string.minutes_ago);
+            notificationText.append(MessageFormat.format(fmt,minutes));
         } else {
             // small screen
             notificationText.append(minutes + getString(R.string.space_mins));
@@ -3159,13 +2985,35 @@ public class Home extends ActivityWithMenu implements ActivityCompat.OnRequestPe
         }
     }
 
+    // This function is needed in hebrew in order to allow printing the text (for exapmle) -3 mg/dl
+    // It seems that without this hack, printing it is impossibale. Android will print something like:
+    // -mg/dl 3 or mg/dl 3- or  mg/dl -3. (but never -3 mg/dl)
+    // The problem seems to happen becaud of the extra 0x0a char that somehow gets to the buffer.
+    // Since this text has high visabilty, I'm doing it. Will not be done in other places.
+    private void HebrewAppendDisplayData() {
+        // Do the append for the hebrew language
+         String original_text = notificationText.getText().toString();
+        Log.d(TAG, "original_text = " + HexDump.dumpHexString(original_text.getBytes()));
+        if(original_text.length() >=1 && original_text.charAt(0) == 0x0a) {
+            Log.d(TAG,"removing first and appending " + display_delta);
+            notificationText.setText(display_delta + "  " + original_text.substring(1));
+        } else {
+            notificationText.setText(display_delta + "  " + original_text);
+        }
+    }
+
     private void addDisplayDelta() {
         if (BgGraphBuilder.isXLargeTablet(getApplicationContext())) {
-            notificationText.append("  ");
+            if(Locale.getDefault().getLanguage() == "iw") {
+                HebrewAppendDisplayData();
+            } else {
+               notificationText.append("  ");
+               notificationText.append(display_delta);
+            }
         } else {
             notificationText.append("\n");
+            notificationText.append(display_delta);
         }
-        notificationText.append(display_delta);
     }
 
     @Override
