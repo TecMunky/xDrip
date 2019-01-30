@@ -296,7 +296,7 @@ public class CollectionServiceStarter {
         }
 
         startSyncService();
-        startDailyIntentService(); // (this.mContext);
+        startDailyIntentService();
         Log.d(TAG, collection_method);
 
 
@@ -410,10 +410,7 @@ public class CollectionServiceStarter {
         this.mContext.startService(new Intent(this.mContext, SyncService.class));
     }
 
-    private void startDailyIntentService() { // Context context
-        //restartDailyIntentService(context);
-        // can probably do this with just startDailyIntentService without callint restart...
-        
+    private void startDailyIntentService() {
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 4);
         calendar.set(Calendar.MINUTE, 10);
