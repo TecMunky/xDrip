@@ -333,7 +333,7 @@ public class CollectionServiceStarter {
         }
 
         //startSyncService(); // TODO do we need to actually do this here?
-        //startDailyIntentService();
+        startDailyIntentService();
         Log.d(TAG, collection_method);
     }
 
