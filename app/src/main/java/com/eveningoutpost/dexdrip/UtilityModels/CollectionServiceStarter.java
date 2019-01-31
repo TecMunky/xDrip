@@ -1,5 +1,7 @@
 package com.eveningoutpost.dexdrip.UtilityModels;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +14,7 @@ import com.eveningoutpost.dexdrip.GcmActivity;
 import com.eveningoutpost.dexdrip.Home;
 import com.eveningoutpost.dexdrip.Models.JoH;
 import com.eveningoutpost.dexdrip.Models.UserError.Log;
+import com.eveningoutpost.dexdrip.Services.DailyIntentService;
 import com.eveningoutpost.dexdrip.Services.DexCollectionService;
 import com.eveningoutpost.dexdrip.Services.DexShareCollectionService;
 import com.eveningoutpost.dexdrip.Services.DoNothingService;
@@ -23,6 +26,8 @@ import com.eveningoutpost.dexdrip.UtilityModels.pebble.PebbleWatchSync;
 import com.eveningoutpost.dexdrip.utils.DexCollectionType;
 import com.eveningoutpost.dexdrip.wearintegration.WatchUpdaterService;
 import com.eveningoutpost.dexdrip.xdrip;
+
+import java.util.Calendar;
 
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.Medtrum;
 import static com.eveningoutpost.dexdrip.utils.DexCollectionType.NSFollow;
@@ -430,11 +435,7 @@ public class CollectionServiceStarter {
 
     /*private void startSyncService() {
         Log.d(TAG, "starting Sync service");
-        try {
-            //JoH.startService(SyncService.class); // TODO update this for Oreo
-            SyncService.startSyncServiceSoon();
-        } catch (Exception e) {
-            UserError.Log.wtf(TAG, "Failed to startSyncService: " + e);
+        this.mContext.startService(new Intent(this.mContext, SyncService.class));
         }
     }*/
 
