@@ -85,12 +85,12 @@ class DexParametersTecMunky extends SlopeParameters {
     * */
 
     DexParametersTecMunky() {
-        LOW_SLOPE_1 = 0.55;
-        LOW_SLOPE_2 = 0.50;
+        LOW_SLOPE_1 = 0.40;
+        LOW_SLOPE_2 = 0.35;
         HIGH_SLOPE_1 = 1.8;
         HIGH_SLOPE_2 = 1.9;
-        DEFAULT_LOW_SLOPE_LOW = 0.55;
-        DEFAULT_LOW_SLOPE_HIGH = 0.50;
+        DEFAULT_LOW_SLOPE_LOW = 0.40;
+        DEFAULT_LOW_SLOPE_HIGH = 0.35;
         DEFAULT_SLOPE = 1;
         DEFAULT_HIGH_SLOPE_HIGH = 1.8;
         DEFAULT_HIGH_SLOPE_LOW = 1.7;
@@ -1036,9 +1036,9 @@ public class Calibration extends Model {
             }
         }
     }
-    
+
     public static void upsertFromMaster(Calibration jsonCalibration) {
-        
+
         if (jsonCalibration == null) {
             Log.wtf(TAG,"Got null calibration from json");
             return;
@@ -1082,14 +1082,14 @@ public class Calibration extends Model {
                 existingCalibration.second_intercept = jsonCalibration.second_intercept;
                 existingCalibration.first_scale = jsonCalibration.first_scale;
                 existingCalibration.second_scale = jsonCalibration.second_scale;
-                
+
                 existingCalibration.save();
             }
         } catch (Exception e) {
             Log.e(TAG, "Could not save Calibration: " + e.toString());
         }
     }
-    
+
 
     //COMMON SCOPES!
     public static Calibration last() {
@@ -1281,7 +1281,7 @@ public class Calibration extends Model {
                  .limit(limit)
                 .execute();
     }
-    
+
     public static List<Calibration> futureCalibrations() {
         double timestamp = new Date().getTime();
         return new Select()
