@@ -438,7 +438,7 @@ public class CollectionServiceStarter {
         }
     }*/
 
-   /* // TODO job scheduler???
+   /* */// TODO job scheduler???
     private void startDailyIntentService() {
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 4);
@@ -449,7 +449,7 @@ public class CollectionServiceStarter {
         final AlarmManager am = (AlarmManager) this.mContext.getSystemService(Context.ALARM_SERVICE);
         am.cancel(pi);
         am.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pi);
-    }*/
+    } // */
 
     private void stopBtShareService() {
         Log.d(TAG, "stopping bt share service");
