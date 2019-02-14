@@ -338,7 +338,7 @@ public class CollectionServiceStarter {
         }
 
         //startSyncService(); // TODO do we need to actually do this here?
-        startDailyIntentService();
+        //startDailyIntentService();
         Log.d(TAG, collection_method);
     }
 
@@ -439,7 +439,7 @@ public class CollectionServiceStarter {
         }
     }*/
 
-   /* */// TODO job scheduler???
+   /* // TODO job scheduler???
     private void startDailyIntentService() {
         final Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.HOUR_OF_DAY, 4);
