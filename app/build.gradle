@@ -251,7 +251,7 @@ android {
             versionNameSuffix "-debug"
             debuggable true
         }
-        variant {
+        /*variant {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
@@ -259,7 +259,7 @@ android {
             ext.enableCrashlytics = false
             applicationIdSuffix ".vr1"
             versionNameSuffix "-variant"
-        }
+        } // */
         applicationVariants.all { variant ->
             variant.outputs.all {
                 outputFileName = "${generateBuildName()}.apk"
