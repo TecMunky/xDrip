@@ -245,11 +245,11 @@ android {
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'),
                     'proguard-rules.pro'
-            testProguardFile 'proguard-debug.pro'
+            //testProguardFile 'proguard-debug.pro'
             ext.enableCrashlytics = false
-            //      applicationIdSuffix ".debug"
+            /*/      applicationIdSuffix ".debug"
             versionNameSuffix "-debug"
-            debuggable true
+            debuggable true // */
         }
         /*variant {
             minifyEnabled true
