@@ -116,7 +116,7 @@ android {
 //        abortOnError false
     }
     defaultConfig {
-        applicationId "com.eveningoutpost.dexdrip"
+        applicationId "tecmunky.xdrip.variant1"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
@@ -126,7 +126,7 @@ android {
         buildConfigField "long", "buildTimestamp", generateTimestamp()
         buildConfigField "int", "targetSDK", targetSdkVersion.mApiLevel.toString()
 
-        applicationId = "com.eveningoutpost.dexdrip"
+        applicationId = "tecmunky.xdrip.variant1"
         resValue "string", "label_xdrip", "XDrip"
         resValue "string", "label_xdrip_large", "XDrip(Large)"
         resValue "string", "label_xdrip_big_chart", "XDrip(BigChart)"
