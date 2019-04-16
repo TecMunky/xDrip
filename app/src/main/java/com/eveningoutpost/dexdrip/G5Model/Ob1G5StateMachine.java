@@ -65,8 +65,6 @@ import static com.eveningoutpost.dexdrip.Services.G5BaseService.G5_BATTERY_LEVEL
 import static com.eveningoutpost.dexdrip.Services.G5BaseService.G5_BATTERY_MARKER;
 import static com.eveningoutpost.dexdrip.Services.G5BaseService.G5_BATTERY_WEARABLE_SEND;
 import static com.eveningoutpost.dexdrip.Services.G5BaseService.G5_FIRMWARE_MARKER;
-import static com.eveningoutpost.dexdrip.Services.G5BaseService.G6_REV2_SCALING;
-import static com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService.G6_SCALING;
 import static com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService.android_wear;
 import static com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService.getTransmitterID;
 import static com.eveningoutpost.dexdrip.Services.Ob1G5CollectionService.onlyUsingNativeMode;
@@ -652,7 +650,7 @@ public class Ob1G5StateMachine {
                             parent.changeState(Ob1G5CollectionService.STATE.CLOSE);
                         } else {
                             UserError.Log.e(TAG, "Error receiving indication: " + throwable);
-                            throwable.printStackTrace();
+                            //throwable.printStackTrace();
                             disconnectNow(parent, connection);
                         }
 
@@ -1189,9 +1187,12 @@ public class Ob1G5StateMachine {
         if (sensorRx.unfiltered == 0) {
             UserError.Log.e(TAG, "Transmitter sent raw sensor value of 0 !! This isn't good. " + JoH.hourMinuteString());
         } else {
-            final boolean g6 = usingG6();
-            final boolean g6r2 = g6 && FirmwareCapability.isTransmitterG6Rev2(getTransmitterID());
-            processNewTransmitterData(g6 ? (int)(sensorRx.unfiltered * (g6r2 ? G6_REV2_SCALING : G6_SCALING)) : sensorRx.unfiltered, g6 ? (int)(sensorRx.filtered * (g6r2 ? G6_REV2_SCALING : G6_SCALING)) : sensorRx.filtered, sensor_battery_level, new Date().getTime());
+            //   final boolean g6 = usingG6();
+            //    final boolean g6r2 = g6 && FirmwareCapability.isTransmitterG6Rev2(getTransmitterID());
+            //    processNewTransmitterData(g6 ? (int)(sensorRx.unfiltered * (g6r2 ? G6_REV2_SCALING : G6_SCALING)) : sensorRx.unfiltered, g6 ? (int)(sensorRx.filtered * (g6r2 ? G6_REV2_SCALING : G6_SCALING)) : sensorRx.filtered, sensor_battery_level, new Date().getTime());
+            processNewTransmitterData((int) RawScaling.scale(sensorRx.unfiltered, getTransmitterID(), false),
+                    (int) RawScaling.scale(sensorRx.filtered, getTransmitterID(), true),
+                    sensor_battery_level, new Date().getTime());
         }
 
         if (WholeHouse.isLive()) {
@@ -1322,9 +1323,10 @@ public class Ob1G5StateMachine {
         return true;
     }
 
-    public static BatteryInfoRxMessage getBatteryDetails(String tx_id) {
+    public static BatteryInfoRxMessage getBatteryDetails(final String tx_id) {
         try {
-            return new BatteryInfoRxMessage(PersistentStore.getBytes(G5_BATTERY_MARKER + tx_id));
+            final byte[] batteryStoredBytes = PersistentStore.getBytes(G5_BATTERY_MARKER + tx_id);
+            return batteryStoredBytes.length > 0 ? new BatteryInfoRxMessage(batteryStoredBytes) : null;
         } catch (Exception e) {
             if (JoH.quietratelimit("bi-exception", 15))
                 UserError.Log.e(TAG, "Exception in getBatteryDetails: " + e);
