@@ -9,6 +9,7 @@ import com.eveningoutpost.dexdrip.Services.WifiCollectionService;
 import com.eveningoutpost.dexdrip.UtilityModels.Pref;
 import com.eveningoutpost.dexdrip.cgm.medtrum.MedtrumCollectionService;
 import com.eveningoutpost.dexdrip.cgm.nsfollow.NightscoutFollowService;
+import com.eveningoutpost.dexdrip.cgm.sharefollow.ShareFollowService;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -37,6 +38,7 @@ public enum DexCollectionType {
     LibreAlarm("LibreAlarm"),
     NSEmulator("NSEmulator"),
     NSFollow("NSFollower"),
+    SHFollow("SHFollower"),
     Medtrum("Medtrum"),
     Disabled("Disabled"),
     Mock("Mock"),
@@ -188,6 +190,8 @@ public enum DexCollectionType {
                 return DoNothingService.class;
             case NSFollow:
                 return NightscoutFollowService.class;
+            case SHFollow:
+                return ShareFollowService.class;
             default:
                 return DexCollectionService.class;
         }
@@ -260,6 +264,8 @@ public enum DexCollectionType {
                 return "Network libre";
             case NSFollow:
                 return "Nightscout";
+            case SHFollow:
+                return "Share";
 
             default:
                 return dct.name();
