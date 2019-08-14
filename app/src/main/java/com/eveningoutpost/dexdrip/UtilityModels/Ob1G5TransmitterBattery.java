@@ -18,7 +18,7 @@ public class Ob1G5TransmitterBattery implements TransmitterBattery {
    }
 
    private BatteryInfoRxMessage batteryRx;
-   private VersionRequestRxMessage versionRx;
+   private VersionRequest1RxMessage versionRx;
    private static final int batteryWarningLevel = G5BaseService.getLowBatteryWarningLevel();
 
    public Ob1G5TransmitterBattery(String tx_id) {
