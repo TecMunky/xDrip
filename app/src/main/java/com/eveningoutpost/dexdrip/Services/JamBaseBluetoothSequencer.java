@@ -45,7 +45,6 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.schedulers.Schedulers;
 import lombok.RequiredArgsConstructor;
 
-import static com.eveningoutpost.dexdrip.Models.JoH.backTrace;
 import static com.eveningoutpost.dexdrip.Models.JoH.emptyString;
 import static com.eveningoutpost.dexdrip.Services.JamBaseBluetoothSequencer.BaseState.CLOSE;
 import static com.eveningoutpost.dexdrip.Services.JamBaseBluetoothSequencer.BaseState.CLOSED;
@@ -739,10 +738,7 @@ public abstract class JamBaseBluetoothSequencer extends JamBaseBluetoothService 
             addToWriteQueue(this, unique, false);
         }
 
-        private void add(final boolean unique) {
-            //addToWriteQueue(byteslist, delay_ms, timeout_seconds, start_now, description, expect_reply, expireAt, runnable);
-            addToWriteQueue(this, unique);
-        }
+    }
 
     private void addToWriteQueue(final QueueMe queueMe, final boolean unique, final boolean atHead) {
         Cloner cloner = null;
