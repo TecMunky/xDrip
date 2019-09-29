@@ -192,6 +192,7 @@ android {
 
 
     defaultConfig {
+        signingConfig signingConfigs.config
         applicationId "com.eveningoutpost.dexdrip"
         minSdkVersion 18
         // increasing target SDK version can cause compatibility issues with Android 7+
@@ -205,9 +206,9 @@ android {
         buildConfigField "long", "buildTimestamp", generateTimestamp()
         buildConfigField "int", "targetSDK", targetSdkVersion.mApiLevel.toString()
         vectorDrawables.useSupportLibrary = true
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
-        signingConfig signingConfigs.config
+        testInstrumentationRunner "android.support.test.runner.MultiDexTestRunner"
     }
     testOptions {
         animationsDisabled = true
