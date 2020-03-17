@@ -109,7 +109,7 @@ android {
         }
     }
     compileSdkVersion 29
-    buildToolsVersion '29.0.2'
+    buildToolsVersion '29.0.3'
     lintOptions {
         checkReleaseBuilds false
 //        abortOnError false
